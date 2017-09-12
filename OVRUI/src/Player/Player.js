@@ -183,6 +183,8 @@ export default class Player {
     (this: any).exitVR = this.exitVR.bind(this);
     (this: any).handleFullscreenChange = this.handleFullscreenChange.bind(this);
     (this: any).resetAngles = this.resetAngles.bind(this);
+    (this: any).handlePointerRestricted = this.handlePointerRestricted.bind(this);
+    (this: any).handlePointerUnrestricted = this.handlePointerUnrestricted.bind(this);
 
     this.isMobile = isMobile;
     this.allowCarmelDeeplink = !!options.allowCarmelDeeplink && isSamsung;
@@ -300,6 +302,8 @@ export default class Player {
     this.controls = new AppControls(this._camera, this.glRenderer.domElement, this.controlOptions);
     this.onEnterVR = options.onEnterVR;
     this.onExitVR = options.onExitVR;
+    window.addEventListener('vrdisplaypointerrestricted', this.handlePointerRestricted);
+    window.addEventListener('vrdisplaypointerunrestricted', this.handlePointerUnrestricted);
 
     // Create an Overlay, which places some interactive controls on top of
     // the rendering canvas
@@ -387,6 +391,23 @@ export default class Player {
     }
   }
 
+  handlePointerRestricted() {
+    console.log("lock");
+    var pointerLockElement = this.glRenderer.domElement;
+    if (pointerLockElement && pointerLockElement.requestPointerLock) {
+      pointerLockElement.requestPointerLock();
+    }
+  }
+  
+  handlePointerUnrestricted() {
+    console.log("unlock");
+    var currentPointerLockElement = document.pointerLockElement;
+    var expectedPointerLockElement = this.glRenderer.domElement;
+    if (currentPointerLockElement && currentPointerLockElement === expectedPointerLockElement 
+      && document.exitPointerLock) {
+        document.exitPointerLock();
+      }
+  }
   /**
    * When WebGL is unsupported or disabled, render an error message.
    * @param width - The width of the parent container
